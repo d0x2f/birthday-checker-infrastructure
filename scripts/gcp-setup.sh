@@ -38,7 +38,8 @@ gcloud services enable \
   iamcredentials.googleapis.com \
   cloudbilling.googleapis.com \
   cloudresourcemanager.googleapis.com \
-  appengine.googleapis.com
+  appengine.googleapis.com \
+  containerregistry.googleapis.com
 
 echo -e "\n=> Linking billing account to terraform project..."
 gcloud beta billing projects link "$TF_PROJECT_ID" --billing-account="$BILLING_ACCOUNT_ID"
@@ -87,6 +88,10 @@ gcloud projects add-iam-policy-binding "$PROJECT_ID" \
 gcloud projects add-iam-policy-binding "$PROJECT_ID" \
   --member="serviceAccount:terraform@$TF_PROJECT_ID.iam.gserviceaccount.com" \
   --role="roles/iam.serviceAccountAdmin"
+gcloud iam service-accounts add-iam-policy-binding \
+  "terraform@$TF_PROJECT_ID.iam.gserviceaccount.com" \
+  --member="serviceAccount:terraform@$TF_PROJECT_ID.iam.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountTokenCreator"
 
 echo -e "\n=> Done!"
 

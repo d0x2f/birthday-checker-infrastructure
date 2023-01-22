@@ -83,3 +83,26 @@ $ terraform apply
 ```
 
 Review the generated changes and apply if acceptable.
+
+## Benchmark
+
+Running against 50 random names and dates `siege` produces the following results:
+
+```
+$ siege -c10 -t60s -f urls --content-type "application/json"
+...
+Transactions:                   4160 hits
+Availability:                 100.00 %
+Elapsed time:                  60.16 secs
+Data transferred:               0.12 MB
+Response time:                  0.14 secs
+Transaction rate:              69.15 trans/sec
+Throughput:                     0.00 MB/sec
+Concurrency:                    9.95
+Successful transactions:        4161
+Failed transactions:               0
+Longest transaction:            0.50
+Shortest transaction:           0.12
+```
+
+I've discovered my router crashes if I use a concurrency of 20 😂.

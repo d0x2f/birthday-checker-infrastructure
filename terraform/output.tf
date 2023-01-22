@@ -3,3 +3,8 @@ output "deployer_key" {
   value       = base64decode(google_service_account_key.deployer_key.private_key)
   sensitive   = true
 }
+
+output "app_url" {
+  description = "Cloud run URL serving the app."
+  value       = google_cloud_run_service.app.status.0.url
+}

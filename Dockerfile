@@ -24,4 +24,6 @@ RUN set -eux; \
 
 WORKDIR /app
 
+COPY . .
+
 ENTRYPOINT [ "/bin/bash" ]

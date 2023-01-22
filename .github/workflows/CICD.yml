@@ -1,0 +1,104 @@
+name: CI/CD
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - id: auth
+        name: Authentication with GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GOOGLE_TERRAFORM_CREDENTIALS }}
+          token_format: access_token
+
+      - name: Authenticate with GCR
+        uses: docker/login-action@v1
+        with:
+          registry: gcr.io
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
+      - name: Build Image
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags: gcr.io/${{ vars.TF_PROJECT_ID }}/birthday-checker-infrastructure:pipeline-${{ github.run_id }}
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - id: auth
+        name: Authentication with GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GOOGLE_TERRAFORM_CREDENTIALS }}
+          token_format: access_token
+
+      - name: Terraform validate
+        uses: LDaneliukas/docker-run-action@forward_env
+        env:
+          GOOGLE_TERRAFORM_CREDENTIALS: ${{ secrets.GOOGLE_TERRAFORM_CREDENTIALS }}
+        with:
+          registry: gcr.io
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+          image: gcr.io/${{ vars.TF_PROJECT_ID }}/birthday-checker-infrastructure:pipeline-${{ github.run_id }}
+          shell: bash
+          run: |
+            echo $GOOGLE_TERRAFORM_CREDENTIALS > /tmp/deploy-key.json
+            export GOOGLE_APPLICATION_CREDENTIALS=/tmp/deploy-key.json
+            cd /app/terraform
+            terraform init -backend-config=bucket=${{ vars.TF_PROJECT_ID }}
+            terraform validate
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    if: "github.ref == 'refs/heads/main'"
+    steps:
+      - id: auth
+        name: Authentication with GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GOOGLE_TERRAFORM_CREDENTIALS }}
+          token_format: access_token
+
+      - name: Authenticate with GCR
+        uses: docker/login-action@v1
+        with:
+          registry: gcr.io
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
+      - name: Tag as latest
+        run: |
+          docker pull gcr.io/${{ vars.TF_PROJECT_ID }}/birthday-checker-infrastructure:pipeline-${{ github.run_id }};
+          docker tag \
+            gcr.io/${{ vars.TF_PROJECT_ID }}/birthday-checker-infrastructure:pipeline-${{ github.run_id }} \
+            gcr.io/${{ vars.TF_PROJECT_ID }}/birthday-checker-infrastructure:latest
+          docker push gcr.io/${{ vars.TF_PROJECT_ID }}/birthday-checker-infrastructure:latest;
+
+      - name: Deploy
+        uses: LDaneliukas/docker-run-action@forward_env
+        env:
+          GOOGLE_TERRAFORM_CREDENTIALS: ${{ secrets.GOOGLE_TERRAFORM_CREDENTIALS }}
+          TF_VAR_project_id: ${{ vars.APP_PROJECT_ID }}
+        with:
+          registry: gcr.io
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+          image: gcr.io/${{ vars.TF_PROJECT_ID }}/birthday-checker-infrastructure:pipeline-${{ github.run_id }}
+          shell: bash
+          run: |
+            echo $GOOGLE_TERRAFORM_CREDENTIALS > /tmp/deploy-key.json
+            export GOOGLE_APPLICATION_CREDENTIALS=/tmp/deploy-key.json
+            cd /app/terraform
+            terraform init -backend-config=bucket=${{ vars.TF_PROJECT_ID }}
+            terraform apply -input=false -auto-approve
