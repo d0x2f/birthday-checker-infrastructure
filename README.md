@@ -5,9 +5,7 @@ application.
 
 The application is deployed using a github actions pipeline.
 
-Please make a pull request at
-[d0x2f/birthday-checker-infrastructure](https://github.com/d0x2f/birthday-checker-infrastructure)
-to submit your contribution for review.
+Please submit a pull request to submit your contribution for review.
 
 ![System Diagram](./resources/system_diagram.png)
 
