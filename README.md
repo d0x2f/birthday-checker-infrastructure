@@ -19,13 +19,11 @@ account.
 
 In order to run the initial setup script you'll need your billing account id.
 
-Choose a project id to deploy to, if the project doesn't already exist,
-it will be created.
-
 ## Environment
 
-A dockerfile is available to provide a consistent environment with all required
-dependencies included. Build and run it from the project root directory like so:
+A dockerfile is available to provide a consistent execution environment with all
+required dependencies included. Build and run it from the project root directory
+like so:
 
 ```bash
 $ docker build . -t birthday-checker-infrastructure
