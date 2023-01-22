@@ -9,6 +9,8 @@ Please make a pull request at
 [d0x2f/birthday-checker-infrastructure](https://github.com/d0x2f/birthday-checker-infrastructure)
 to submit your contribution for review.
 
+![System Diagram](./resources/system_diagram.png)
+
 The following information describes how to use the code in the repository to
 perform a manual deployment for informational purposes.
 
@@ -63,10 +65,10 @@ command:
 $ gcloud iam service-accounts keys create deploy-key.json --iam-account="terraform@${TF_PROJECT_ID}.iam.gserviceaccount.com"
 ```
 
-Note that the `gcp-setup.sh` script exports `$TERRAFORM_STATE_PROJECT_ID`.
+Note that the `gcp-setup.sh` script exports `$TF_PROJECT_ID`.
 
-These are the credentials used by terraform to deploy, take the
-`deploy-key.json` file and keep it to use in the next step.
+These are the credentials used by terraform to deploy resources in the next
+step.
 
 ## Running
 
