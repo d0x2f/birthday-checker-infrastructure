@@ -3,6 +3,8 @@
 This project houses the infrastructure powering the birthday-checker
 application.
 
+It's currently hosted at https://birthday-checker-3vshm7xaxa-nw.a.run.app.
+
 The application is deployed using a github actions pipeline.
 
 Please submit a pull request to submit your contribution for review.
